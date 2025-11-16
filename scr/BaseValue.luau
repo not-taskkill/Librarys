@@ -4,7 +4,7 @@
 
 -- Deprecated but works.
 
-local LemonSignal = loadstring(game:HttpGet("https://gitlab.com/not-taskkill/roblox/-/raw/main/librays/LemonSignal.lua?ref_type=heads"))()
+local LemonSignal = loadstring(game:HttpGet("https://raw.githubusercontent.com/Data-Oriented-House/LemonSignal/refs/heads/main/src/LemonSignal.lua"))()
 
 local BaseValue = {}
 BaseValue.__index = BaseValue
