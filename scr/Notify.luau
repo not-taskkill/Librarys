@@ -1,13 +1,5 @@
 repeat task.wait() until game:IsLoaded() and game:GetService("Players").LocalPlayer
 
-export type NotificationArguments = {
-	Title: string,
-	Subtitle: string,
-	Icon: string,
-	Duration: number,
-	SoundId: string | number
-}
-
 gservice = game.GetService
 gdestroy = game.Destroy
 tonum = tonumber
@@ -31,7 +23,6 @@ end
 
 local BasePlayerGui = gservice(game, "StarterGui")
 local CoreGui = gservice(game, "CoreGui")
-local Debris = gservice(game, "Debris")
 
 local function HookMusic(Id)
 	local IsNumber = tonum(Id)
@@ -74,7 +65,7 @@ local function HookMusic(Id)
 	end)
 end
 
-local Notify = function(NotificationArguments: NotificationArguments)
+local Notify = function(NotificationArguments)
 	BasePlayerGui:SetCore("SendNotification", {
 		Title = NotificationArguments["Title"] or "",
 		Text = NotificationArguments["Subtitle"] or "",
