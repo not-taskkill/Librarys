@@ -1,80 +1,77 @@
+--!optimize 2
+
 repeat task.wait() until game:IsLoaded() and game:GetService("Players").LocalPlayer
 
-gservice = game.GetService
-gdestroy = game.Destroy
-tonum = tonumber
-tostr = tostring
-parent = nil
-inew = function(InstanceIdentity, Propertys)
-	local InstanceCreatedSuccess, InstanceCreated = pcall(function()
-		return Instance.new(InstanceIdentity)
-	end)
-	
-	if not InstanceCreatedSuccess then
-		return
-	end
-	
-	for PropertyIdentity, PropertyValue in pairs(Propertys) do
-		InstanceCreated[PropertyIdentity] = PropertyValue
-	end
-	
-	return InstanceCreated
+local function missing(t, f, fallback)
+	if type(f) == t then return f end
+	return fallback
 end
 
-local BasePlayerGui = gservice(game, "StarterGui")
-local CoreGui = gservice(game, "CoreGui")
+cloneref = missing("function", cloneref, function(...) return ... end)
 
-local function HookMusic(Id)
-	local IsNumber = tonum(Id)
-	local realSound = nil
-	
-	if IsNumber then
-		realSound = `rbxassetid://{tostr(Id)}`
-	else
-		realSound = Id
-	end
-	
-	local Sound = inew("Sound", {
-		Volume = 1,
-		SoundId = realSound
-	})
-	
-	if parent then
-		Sound.Parent = parent
-	else
-		if get_hidden_gui or gethui then
-			local hiddenUI = get_hidden_gui or gethui
-			Sound.Parent = hiddenUI()
-			parent = hiddenUI()
-		elseif CoreGui:FindFirstChild("RobloxGui") then
-			parent = CoreGui.RobloxGui
+Services = setmetatable({}, {
+	__index = function(self, name)
+		local success, cache = pcall(function()
+			return cloneref(game:GetService(name))
+		end)
+		if success then
+			rawset(self, name, cache)
+			return cache
 		else
-			Sound.Parent = CoreGui
-			parent = CoreGui
+			warn(`[Notify Library]: Invalid RBX Service: {tostring(name)}`)
 		end
-	end
-	
-	if not Sound.Loaded then
-		Sound.Loaded:Wait()
-	end
-	
-	Sound:Play()
-	
-	Sound.Ended:Once(function()
-		pcall(gdestroy, Sound)
+	end,
+	__metatable = "meow!"
+})
+
+local CoreGui = Services.CoreGui
+local BasePlayerGui = Services.StarterGui
+
+local function SendMessageFromCore(args)
+	local Success, Result = pcall(function()
+		BasePlayerGui:SetCore("SendNotification", {
+			Title = args["Title"] or "",
+			Text = args["Subtitle"] or "",
+			Icon = args["Icon"] or "",
+			Duration = args["Duration"] or 5
+		})
 	end)
+
+	if not Success then
+		warn(`[Notify Library]: Error on Sending Core Messages: {tostring(Result)}`)
+	end
 end
 
-local Notify = function(NotificationArguments)
-	BasePlayerGui:SetCore("SendNotification", {
-		Title = NotificationArguments["Title"] or "",
-		Text = NotificationArguments["Subtitle"] or "",
-		Icon = NotificationArguments["Icon"] or "",
-		Duration = NotificationArguments["Duration"] or 5
+local function StartupSound(Id)
+	local Ended
+	local Sound = Instance.new("Sound")
+	Sound.Name = "Notify Library - Sound"
+	Sound.SoundId = `rbxassetid://{Id}`
+	Sound.Volume = 1
+	Sound.Parent = CoreGui
+
+	Ended = Sound.Ended:Connect(function()
+		pcall(game.Destroy, Sound)
+		if Ended then
+			Ended:Disconnect()
+		end
+	end)
+
+	Sound:Play()
+end
+
+local Notify = {}
+
+function Notify.new(title, subtitle, icon, duration, soundId)
+	SendMessageFromCore({
+		Title = title,
+		Subtitle = subtitle,
+		Icon = icon,
+		Duration = duration
 	})
-	
-	if NotificationArguments["SoundId"] then
-		HookMusic(NotificationArguments["SoundId"])
+
+	if soundId then
+		StartupSound(soundId)
 	end
 end
 
