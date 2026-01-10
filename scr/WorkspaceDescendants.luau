@@ -1,6 +1,6 @@
 local WorkspaceDescendants = workspace:GetDescendants()
 
-local function descendantAdded(instance: Instance)
+local function descendantAdded(instance)
 	table.insert(WorkspaceDescendants, instance)
 end
 
@@ -13,7 +13,7 @@ function Array.remove(array, value)
 	end
 end
 
-local function descendantRemoving(instance: Instance)
+local function descendantRemoving(instance)
 	Array.remove(WorkspaceDescendants, instance)
 end
 
