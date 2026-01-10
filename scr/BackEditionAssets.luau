@@ -29,6 +29,15 @@ waxgetcustomasset = missing("function", getcustomasset or getsynasset)
 local BackiEditionImages = {}
 local BackiEditionSounds = {}
 
+local UserInputService = game:GetService("UserInputService")
+
+local IsOnMobile = nil
+xpcall(function()
+	IsOnMobile = table.find({Enum.Platform.Android, Enum.Platform.IOS}, UserInputService:GetPlatform())
+end, function()
+	IsOnMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+end)
+
 local function CreateFileOrFolder(path, content, folder)
 	if isfile(path) or isfolder(path) then
 		return
@@ -51,7 +60,7 @@ end
 
 function BackiEditionAssets:GetAssets(TaskHubScriptIdentity, ShouldPrintAssetLoading)
 	local soundBasePath = "TaskHub/Forsaken/BackiEdition/sounds/"
-	
+
 	local soundData = {
 		{ "BackiSound1.mp3",  "rbxassetid://70542612197339" },
 		{ "BackiSound2.mp3",  "rbxassetid://2796806401" },
@@ -88,12 +97,16 @@ function BackiEditionAssets:GetAssets(TaskHubScriptIdentity, ShouldPrintAssetLoa
 		local bytecode = base64dec(game:HttpGetAsync(imageUrl))
 		CreateFileOrFolder(imagePath, bytecode, false)
 
+		if IsOnMobile then
+			CreateFileOrFolder(string.format("%s/.nomedia", basePath), "", false)
+		end
+
 		local asset = waxgetcustomasset(imagePath)
 		BackiEditionImages[imagePath] = asset
 
 		if ShouldPrintAssetLoading then
-            print(string.format("[%s]: loading image -> %s", TaskHubScriptIdentity, imageName))
-        end
+			print(string.format("[%s]: loading image -> %s", TaskHubScriptIdentity, imageName))
+		end
 	end
 
 	for path, source in pairs(BackiEditionSounds) do
@@ -105,11 +118,15 @@ function BackiEditionAssets:GetAssets(TaskHubScriptIdentity, ShouldPrintAssetLoa
 			BackiEditionSounds[path] = asset
 		end
 
+		if IsOnMobile then
+			CreateFileOrFolder(string.format("%s/.nomedia", soundBasePath), "", false)
+		end
+
 		if ShouldPrintAssetLoading then
-            print(string.format("[%s]: loading sound -> %s", TaskHubScriptIdentity, source))
-        end
+			print(string.format("[%s]: loading sound -> %s", TaskHubScriptIdentity, source))
+		end
 	end
-	
+
 	return BackiEditionSounds, BackiEditionImages
 end
 
