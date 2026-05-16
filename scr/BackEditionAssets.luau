@@ -1,3 +1,6 @@
+-- Don't use that module.
+-- This module needs a rework
+
 local BackiEditionAssets = {}
 
 local function missing(t, f, fallback)

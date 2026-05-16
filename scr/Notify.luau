@@ -1,3 +1,5 @@
+-- This will be deleted on 20/05/26
+
 repeat task.wait() until game:IsLoaded() and game:GetService("Players").LocalPlayer
 
 gservice = game.GetService

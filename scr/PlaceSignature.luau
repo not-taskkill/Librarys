@@ -1,17 +1,10 @@
---//====================================================\\--
---||                     Variables                      ||--
---\\====================================================//--
+-- Keeping this module for Compatibility with other scripts.
 
 local CurrentPlaceId = game.PlaceId
 local CurrentPlaceVersion = game.PlaceVersion
 
 local RNG
 
---//====================================================\\--
---||                     Functions                      ||--
---\\====================================================//--
-
--- idk what i am doing
 local function getRNG()
 	if not RNG then
 		RNG = Random.new()
@@ -42,16 +35,8 @@ local function randomBytes(len)
 	end)
 end
 
---//====================================================\\--
---||                   Module Config                    ||--
---\\====================================================//--
-
---// PlaceSignature is an improved replacement for the legacy PlaceCheck.luau
---// The legacy module is still supported but new scripts should use PlaceSignature
-
 local PlaceSignature = {}
 
--- Checks whether the provided profile matches the current place signature
 function PlaceSignature:Matches(Profile)
 	if not Profile then
 		warn(`{randomBytes()} [PlaceSignature]: no Profile.`)

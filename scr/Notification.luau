@@ -1,3 +1,5 @@
+-- Keeping this module for Compatibility with other scripts.
+
 local hCloneref = cloneref or clonereference or clone_reference or function(ref)
 	if not getreg then return ref end
 
@@ -30,10 +32,9 @@ local hCloneref = cloneref or clonereference or clone_reference or function(ref)
 	end
 	return f.invalidate
 end
--- ↑ function from DexRefined
 
 local function Create(Class, Properties)
-	if not Class then return end
+	if not Class then return nil end
 	
 	Properties = Properties or {}
 	
@@ -42,7 +43,7 @@ local function Create(Class, Properties)
 	end)
 	
 	if not success then
-		--// error(`cannot create this Instance -> {tostring(Class)}`)
+		return nil
 	end
 	
 	for Entry, Value in pairs(Properties) do
@@ -58,10 +59,9 @@ local rng = Random.new(os.clock())
 repeat task.wait() until ugc:IsLoaded()
 
 local CoreGui = hCloneref(ugc:GetService("CoreGui"))
-local BasePlayerGui = hCloneref(ugc:GetService("StarterGui")) -- hmm
-local Contentr = hCloneref(ugc:GetService("ContentProvider"))
+local BasePlayerGui = hCloneref(ugc:GetService("StarterGui"))
+local Content = hCloneref(ugc:GetService("ContentProvider"))
 local Players = hCloneref(ugc:GetService("Players"))
--- ↑ i will make a better way to get services later
 
 local LocalUser = hCloneref(Players.LocalPlayer)
 
@@ -113,7 +113,7 @@ local function SendNotification(Array)
 	end)
 	
 	if not success then
-		--// error(`cannot display notifications through starter gui -> {tostring(err)}`)
+		return
 	end
 	
 	if Array.Sound then
@@ -152,7 +152,6 @@ local success, result = pcall(function()
 		return "bypass has been already done"
 	end
 	
-	-- ContentProvider Bypasses
 	local randomizedCoreGuiTable;
 	local randomizedGameTable;
 
@@ -231,19 +230,9 @@ local success, result = pcall(function()
 	getgenv()[`{LocalUser.UserId or LocalUser.Name}_cBypassAlreadyDone`] = true
 end)
 
-if not success then
-	--// warn("your executor doesn't support the bypass script you can be detected to game anti-cheat any time.")
-end
-
 local Notification = {}
 
 function Notification:Send(Array)
-	--[[ print("Notification Send Request.")
-	print("Attempting to get the arguments..")
-	for Key, Value in pairs(Array) do
-		print(`Key -> {Key} | Value -> {Value}`)
-	end
-	print("Done with arguments starting function..") ]]
 	task.spawn(SendNotification, Array)
 end
 
