@@ -1,4 +1,4 @@
-local SignalPlus = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexanderLindholt/SignalPlus/refs/heads/main/source/init.luau"))()
+local SignalPlus = loadstring(game:HttpGet("https://raw.githubusercontent.com/stravant/goodsignal/refs/heads/master/src/init.lua"))()
 
 local Rainbow = {}
 local Signals = {}
