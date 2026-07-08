@@ -1,4 +1,4 @@
-local SignalPlus = loadstring(game:HttpGet("https://raw.githubusercontent.com/stravant/goodsignal/refs/heads/master/src/init.lua"))()
+local LemonSignal = loadstring(game:HttpGet("https://raw.githubusercontent.com/Data-Oriented-House/LemonSignal/refs/heads/main/src/LemonSignal.lua"))()
 
 local Rainbow = {}
 local Signals = {}
@@ -12,7 +12,7 @@ local function randomString()
 	return table.concat(array)
 end
 
-function Rainbow:CreateSignal(Saturation: number?, Brightness: number?, Speed: number?)
+function Rainbow:CreateSignal(Saturation, Brightness, Speed)
 	Saturation = Saturation or 1
 	Brightness = Brightness or 1
 	Speed = Speed or 0.06
@@ -20,7 +20,7 @@ function Rainbow:CreateSignal(Saturation: number?, Brightness: number?, Speed: n
 	local hue = 0
 	local loopThread = nil
 	local key = randomString()
-	local RainbowSignal = SignalPlus()
+	local RainbowSignal = LemonSignal.new()
 	
 	loopThread = task.spawn(function()
 		while task.wait(Speed) do
@@ -40,7 +40,7 @@ function Rainbow:CreateSignal(Saturation: number?, Brightness: number?, Speed: n
 	return RainbowSignal, key
 end
 
-function Rainbow:DestroySignal(Key: string)
+function Rainbow:DestroySignal(Key)
 	if not Key then return end
 	
 	local Data = Signals[Key]
