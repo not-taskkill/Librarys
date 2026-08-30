@@ -7,22 +7,9 @@
 
 ]]
 
-local myriadAPI = _myriadApi or loadstring(game:HttpGet("https://github.com/Standard-2/Myriad/releases/latest/download/api.luau"))()
-if not _myriadApi then
-    pcall(function()
-        getgenv()._myriadApi = myriadAPI
-    end)
-end
-
-local ClonerefCheckResult = myriadAPI.Standards.Checks.Instances.cloneref()
-if ClonerefCheckResult ~= 200 then
-    ClonerefCheckResult = false
-end
-
 local Signal = loadstring(game:HttpGet("https://raw.githubusercontent.com/Data-Oriented-House/LemonSignal/refs/heads/main/src/LemonSignal.lua"))()
-local HttpService: HttpService = ClonerefCheckResult and cloneref and cloneref(game:GetService("HttpService")) or game:GetService("HttpService")
-local RunService: RunService = ClonerefCheckResult and cloneref and cloneref(game:GetService("RunService")) or game:GetService("RunService")
-local CurrentSignals = {}
+local HttpService: HttpService = cloneref(game:GetService("HttpService"))
+local RunService: RunService = cloneref(game:GetService("RunService"))
 
 local module = {}
 
