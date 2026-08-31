@@ -1,86 +1,158 @@
 --[[
+	@Rainbow - v3
+	@author: . . .
+	
+	sorry this is vibecoded because, i was bored and tired. I will change later
+	A lightweight HSV color cycler for Roblox.
 
-@Rainbow.luau
-@author: TaskKill.
-
----// a simple rainbow mod provinding configurations and cleaning functions to free some memory.
-
+	Features:
+		- Single RenderStepped connection per Rainbow instance
+		- Multiple listeners/signals supported
+		- Automatic cleanup
+		- Delta-time based hue progression
+		- Immutable options
 ]]
 
-local Signal = loadstring(game:HttpGet("https://raw.githubusercontent.com/Data-Oriented-House/LemonSignal/refs/heads/main/src/LemonSignal.lua"))()
-local HttpService: HttpService = cloneref(game:GetService("HttpService"))
-local RunService: RunService = cloneref(game:GetService("RunService"))
+export type RainbowOptions = {
+	Incrementer: number?,
+	Saturation: number?,
+	Brightness: number?
+}
 
-local module = {}
+export type Rainbow = {
+	new: (Options: RainbowOptions?) -> Rainbow,
 
---// this doens't return a signal but is just for typescript recognize
-function module.Init(Saturation: number?, Brightness: number?, RainbowIncrementer: number?): (RBXScriptSignal, string)
-    Saturation = Saturation or 1
-    Brightness = Brightness or 1
-    RainbowIncrementer = RainbowIncrementer or 0.06
+	CreateSignal: (self: Rainbow) -> RBXScriptSignal,
+	Destroy: (self: Rainbow) -> (),
 
-    local randomindex = HttpService:GenerateGUID(false)
-    local signal: RBXScriptSignal = Signal.new()
-    local conn = nil
-    local hue = 0
+	SetIncrementer: (self: Rainbow, Value: number) -> (),
+	SetSaturation: (self: Rainbow, Value: number) -> (),
+	SetBrightness: (self: Rainbow, Value: number) -> (),
 
-    conn = RunService.RenderStepped:Connect(function(dt)
-        hue = (hue + RainbowIncrementer * dt) % 1
-        
-        if signal then
-            signal:Fire(Color3.fromHSV(hue, Saturation, Brightness))
-        end
-    end)
+	GetColor: (self: Rainbow) -> Color3
+}
 
-    CurrentSignals[randomindex] = {
-        RainbowSignal = signal,
-        SteppedConnection = conn
-    }
+local RunService = game:GetService("RunService")
 
-    return signal, randomindex
+local LemonSignal = require(script.LemonSignal)
+
+local Rainbow = {}
+Rainbow.__index = Rainbow
+
+local DEFAULT_INCREMENTER = 0.06
+local DEFAULT_SATURATION = 1
+local DEFAULT_BRIGHTNESS = 1
+
+local function clamp01(Value: number): number
+	return math.clamp(Value, 0, 1)
 end
 
-function module.GetAvaibleSignal(): RBXScriptSignal?
-	local count = 0
-	for _ in pairs(CurrentSignals) do 
-        count += 1 
-    end
-
-	if count == 0 then 
-        return nil
-    end
-
-	local choice = math.random(1, count)
-	local index = 0
-
-	for _, v in pairs(CurrentSignals) do
-		index += 1
-
-		if index == choice then
-			return v.signal
-		end
+local function validateNumber(Value: any, Default: number): number
+	if type(Value) ~= "number" or Value ~= Value then
+		return Default
 	end
 
-	return nil
+	return Value
 end
 
-function module.Destroy(Index: string?)
-    if type(Index) ~= "string" then
-        return
-    end
+function Rainbow.new(Options: RainbowOptions?): Rainbow
+	Options = Options or {}
 
-    local Data = CurrentSignals[Index]
-    if Data then
-        if Data.SteppedConnection and Data.SteppedConnection.Connected ~= false then
-            Data.SteppedConnection:Disconnect()
-        end
+	local self = setmetatable({
+		_signal = LemonSignal.new(),
+		_connection = nil,
 
-        if Data.RainbowSignal then
-            Data.RainbowSignal:Destroy()
-        end
+		_hue = 0,
+		_incrementer = validateNumber(
+			Options.Incrementer,
+			DEFAULT_INCREMENTER
+		),
 
-        CurrentSignals[Index] = nil
-    end
+		_saturation = clamp01(validateNumber(
+			Options.Saturation,
+			DEFAULT_SATURATION
+			)),
+
+		_brightness = clamp01(validateNumber(
+			Options.Brightness,
+			DEFAULT_BRIGHTNESS
+			)),
+
+		_destroyed = false,
+	}, Rainbow)
+
+	self._connection = RunService.RenderStepped:Connect(function(dt)
+		if self._destroyed then
+			return
+		end
+
+		self._hue = (self._hue + self._incrementer * dt) % 1
+
+		self._signal:Fire(
+			Color3.fromHSV(
+				self._hue,
+				self._saturation,
+				self._brightness
+			)
+		)
+	end)
+
+	return self
 end
 
-return module
+function Rainbow:CreateSignal(): RBXScriptSignal
+	assert(not self._destroyed, "Rainbow has been destroyed")
+
+	return self._signal
+end
+
+function Rainbow:SetIncrementer(Value: number)
+	assert(not self._destroyed, "Rainbow has been destroyed")
+	assert(type(Value) == "number", "Incrementer must be a number")
+
+	self._incrementer = Value
+end
+
+function Rainbow:SetSaturation(Value: number)
+	assert(not self._destroyed, "Rainbow has been destroyed")
+	assert(type(Value) == "number", "Saturation must be a number")
+
+	self._saturation = clamp01(Value)
+end
+
+function Rainbow:SetBrightness(Value: number)
+	assert(not self._destroyed, "Rainbow has been destroyed")
+	assert(type(Value) == "number", "Brightness must be a number")
+
+	self._brightness = clamp01(Value)
+end
+
+function Rainbow:GetColor(): Color3
+	assert(not self._destroyed, "Rainbow has been destroyed")
+
+	return Color3.fromHSV(
+		self._hue,
+		self._saturation,
+		self._brightness
+	)
+end
+
+function Rainbow:Destroy()
+	if self._destroyed then
+		return
+	end
+
+	self._destroyed = true
+
+	if self._connection then
+		self._connection:Disconnect()
+		self._connection = nil
+	end
+
+	if self._signal then
+		self._signal:Destroy()
+		self._signal = nil
+	end
+end
+
+return Rainbow
