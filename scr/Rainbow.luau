@@ -34,7 +34,7 @@ export type Rainbow = {
 
 local RunService = game:GetService("RunService")
 
-local LemonSignal = require(script.LemonSignal)
+local LemonSignal = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/Data-Oriented-House/LemonSignal/refs/heads/main/src/LemonSignal.lua"))()
 
 local Rainbow = {}
 Rainbow.__index = Rainbow
